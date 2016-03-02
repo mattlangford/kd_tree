@@ -22,14 +22,14 @@ class Node():
         if point[axis] < self.point[axis]:
             #print " Lesser"
             if self.lesser is None:
-                return [self.dist_to_point(point),self.linked_object]
+                return [self.dist_to_point(point),self]
             else:
                 closest = self.lesser.search(point,axis)
                 #print self,closest, "-"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
-                    return [node_dist,self.linked_object]
+                    return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
                 if abs(self.point[axis] - point[axis]) < closest[0]:
@@ -42,14 +42,14 @@ class Node():
         elif point[axis] >= self.point[axis]:
             #print " Greater or Equal"
             if self.greater is None:
-                return [self.dist_to_point(point),self.linked_object]
+                return [self.dist_to_point(point),self]
             else:
                 closest = self.greater.search(point,axis)
                 #print self,closest, "+"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
-                    return [node_dist,self.linked_object]
+                    return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
                 if abs(self.point[axis] - point[axis]) < closest[0]:
