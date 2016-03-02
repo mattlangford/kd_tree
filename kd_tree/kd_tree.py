@@ -8,7 +8,7 @@ class Node():
         self.linked_object = linked_object
 
     def __repr__(self):
-        return str(self.point)
+        return self.linked_object + ":" + str(self.point)
 
     def dist_to_point(self, point):
         point = np.array(point)
@@ -92,11 +92,11 @@ class KDTree():
 
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None:
-            self.points.append(point) 
+            self.points.append(n) 
             self.base_node = n
             return
         
-        self.nodes.append(point)
+        self.nodes.append(n)
         self.base_node.insert(n,-1)
 
     def insert_unique(self, point, linked_object=None):
@@ -104,12 +104,12 @@ class KDTree():
 
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None: 
-            self.nodes.append(point)
+            self.nodes.append(n)
             self.base_node = n
             return
 
         if self.base_node.search(np.array(point),-1)[0] >= self.duplicate_tolerance:
-            self.nodes.append(point)
+            self.nodes.append(n)
             self.base_node.insert(n,-1)
 
     def search(self, point):
