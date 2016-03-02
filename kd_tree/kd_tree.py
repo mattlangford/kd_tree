@@ -1,10 +1,11 @@
 import numpy as np
 class Node():
-    def __init__(self,point):
+    def __init__(self,point,linked_object):
         self.point = np.array(point)
         self.lesser = None
         self.greater = None
         self.d = len(point)
+        self.linked_object = linked_object
 
     def __repr__(self):
         return str(self.point)
@@ -21,14 +22,14 @@ class Node():
         if point[axis] < self.point[axis]:
             #print " Lesser"
             if self.lesser is None:
-                return [self.dist_to_point(point),self]
+                return [self.dist_to_point(point),self.linked_object]
             else:
                 closest = self.lesser.search(point,axis)
                 #print self,closest, "-"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
-                    return [node_dist,self]
+                    return [node_dist,self.linked_object]
 
                 # Is hyperplane in the hypersphere
                 if abs(self.point[axis] - point[axis]) < closest[0]:
@@ -41,14 +42,14 @@ class Node():
         elif point[axis] >= self.point[axis]:
             #print " Greater or Equal"
             if self.greater is None:
-                return [self.dist_to_point(point),self]
+                return [self.dist_to_point(point),self.linked_object]
             else:
                 closest = self.greater.search(point,axis)
                 #print self,closest, "+"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
-                    return [node_dist,self]
+                    return [node_dist,self.linked_object]
 
                 # Is hyperplane in the hypersphere
                 if abs(self.point[axis] - point[axis]) < closest[0]:
@@ -76,18 +77,18 @@ class Node():
             else:
                 self.greater.insert(new_node,axis)
         return
-        
+
 class KDTree():
     def __init__(self, duplicate_tolerance = 1):
         # Init with the number of dimensions
         self.base_node = None
-        self.points = []
+        self.nodes = []
 
         # When checking for duplicates, use this as the tolerance when identifying the same point
         self.duplicate_tolerance = duplicate_tolerance
 
-    def insert(self,point):
-        n = Node(point)
+    def insert(self, point, linked_object=None):
+        n = Node(point,linked_object)
 
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None:
@@ -95,20 +96,20 @@ class KDTree():
             self.base_node = n
             return
         
-        self.points.append(point)
+        self.nodes.append(point)
         self.base_node.insert(n,-1)
 
-    def insert_unique(self,point):
-        n = Node(point)
+    def insert_unique(self, point, linked_object=None):
+        n = Node(point,linked_object)
 
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None: 
-            self.points.append(point)
+            self.nodes.append(point)
             self.base_node = n
             return
 
         if self.base_node.search(np.array(point),-1)[0] >= self.duplicate_tolerance:
-            self.points.append(point)
+            self.nodes.append(point)
             self.base_node.insert(n,-1)
 
     def search(self, point):
