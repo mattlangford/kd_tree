@@ -6,8 +6,12 @@ class Node():
         self.greater = None
         self.d = len(point)
         self.linked_object = linked_object
+        # Set to true if the this node is equal to it's parent node on that axis
+        self.equal_flag = False
 
     def __repr__(self):
+        if self.linked_object is None:
+            return str(self.point)
         return self.linked_object + ":" + str(self.point)
 
     def dist_to_point(self, point):
@@ -15,23 +19,28 @@ class Node():
         return np.linalg.norm(self.point-point)
 
     def search(self, point, axis):
-        axis += 1
-        if axis == self.d: axis = 0
+        axis = self.next_axis(axis)
 
         #print axis,self,"LESSER:",self.lesser,"GREATER:",self.greater
         if point[axis] < self.point[axis]:
-            #print " Lesser"
+            #print axis,"-"
             if self.lesser is None:
+                # This check needs to be here since we lump axis equal to each other into the greater then branch.
+                if self.greater is not None:
+                    other_closest = self.greater.search(point,axis)
+                    if other_closest[0] < self.dist_to_point(point):
+                        return self.greater.search(point,axis)
+
                 return [self.dist_to_point(point),self]
             else:
                 closest = self.lesser.search(point,axis)
-                #print self,closest, "-"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
                     return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
+                print axis,self,abs(self.point[axis] - point[axis]), "i"
                 if abs(self.point[axis] - point[axis]) < closest[0]:
                     if self.greater is None: return closest
                     other_closest = self.greater.search(point,axis)
@@ -39,19 +48,25 @@ class Node():
                         return other_closest
                     else:
                         return closest
+
         elif point[axis] >= self.point[axis]:
-            #print " Greater or Equal"
+            #print axis,"+"
             if self.greater is None:
+                # if self.lesser is not None:
+                #     other_closest = self.lesser.search(point,axis)
+                #     if other_closest[0] < self.dist_to_point(point):
+                #         return self.lesser.search(point,axis)
+                
                 return [self.dist_to_point(point),self]
             else:
                 closest = self.greater.search(point,axis)
-                #print self,closest, "+"
                 # If this node is closer then the closest then return it as the new closest.
                 node_dist = self.dist_to_point(point)
                 if node_dist < closest[0]:
                     return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
+                #print axis,self,abs(self.point[axis] - point[axis]),"i"
                 if abs(self.point[axis] - point[axis]) < closest[0]:
                     if self.lesser is None: return closest
                     other_closest = self.lesser.search(point,axis)
@@ -61,21 +76,26 @@ class Node():
                         return closest
         return closest
 
-    def insert(self, new_node, axis):
+    def next_axis(self,axis):
         axis += 1
         if axis == self.d: axis = 0
+        return axis
+
+    def insert(self, new_node, axis):
+        axis = self.next_axis(axis)
 
         if new_node.point[axis] < self.point[axis]:
             if self.lesser is None:
                 self.lesser = new_node
-            else:
-                self.lesser.insert(new_node,axis)
+                return
+            self.lesser.insert(new_node,axis)
 
         elif new_node.point[axis] >= self.point[axis]:
             if self.greater is None:
                 self.greater = new_node
-            else:
-                self.greater.insert(new_node,axis)
+                return
+            self.greater.insert(new_node,axis)
+
         return
 
 class KDTree():
@@ -86,6 +106,9 @@ class KDTree():
 
         # When checking for duplicates, use this as the tolerance when identifying the same point
         self.duplicate_tolerance = duplicate_tolerance
+
+    def __repr__(self):
+        return str(self.nodes)
 
     def insert(self, point, linked_object=None):
         n = Node(point,linked_object)
