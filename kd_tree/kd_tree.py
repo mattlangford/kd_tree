@@ -29,7 +29,7 @@ class Node():
                 if self.greater is not None:
                     other_closest = self.greater.search(point,axis)
                     if other_closest[0] < self.dist_to_point(point):
-                        return self.greater.search(point,axis)
+                        return other_closest
 
                 return [self.dist_to_point(point),self]
             else:
@@ -51,6 +51,12 @@ class Node():
         elif point[axis] >= self.point[axis]:
             #print axis,"+"
             if self.greater is None:
+                # # This check needs to be here since we lump axis equal to each other into the greater than branch.
+                # if self.lesser is not None:
+                #     other_closest = self.lesser.search(point,axis)
+                #     if other_closest[0] < self.dist_to_point(point):
+                #         return other_closest
+
                 return [self.dist_to_point(point),self]
             else:
                 closest = self.greater.search(point,axis)
@@ -92,7 +98,7 @@ class Node():
         return
 
 class KDTree():
-    def __init__(self, duplicate_tolerance = 1):
+    def __init__(self, duplicate_tolerance = .001):
         # Init with the number of dimensions
         self.base_node = None
         self.nodes = []
@@ -134,3 +140,11 @@ class KDTree():
             return
 
         return self.base_node.search(np.array(point),-1)
+
+    # def insert_list(self, list):
+    #     '''
+    #     Generates a new tree with the new list. List elements should be Node objects.
+    #     '''
+    #     for l in new_list:
+    #         self.insert(l.point,linked_object=l.linked_object)
+    #     return temp_tree
