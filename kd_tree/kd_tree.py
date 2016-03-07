@@ -25,7 +25,7 @@ class Node():
         if point[axis] < self.point[axis]:
             #print axis,"-"
             if self.lesser is None:
-                # This check needs to be here since we lump axis equal to each other into the greater then branch.
+                # This check needs to be here since we lump axis equal to each other into the greater than branch.
                 if self.greater is not None:
                     other_closest = self.greater.search(point,axis)
                     if other_closest[0] < self.dist_to_point(point):
@@ -40,7 +40,6 @@ class Node():
                     return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
-                print axis,self,abs(self.point[axis] - point[axis]), "i"
                 if abs(self.point[axis] - point[axis]) < closest[0]:
                     if self.greater is None: return closest
                     other_closest = self.greater.search(point,axis)
@@ -52,11 +51,6 @@ class Node():
         elif point[axis] >= self.point[axis]:
             #print axis,"+"
             if self.greater is None:
-                # if self.lesser is not None:
-                #     other_closest = self.lesser.search(point,axis)
-                #     if other_closest[0] < self.dist_to_point(point):
-                #         return self.lesser.search(point,axis)
-                
                 return [self.dist_to_point(point),self]
             else:
                 closest = self.greater.search(point,axis)
@@ -66,7 +60,6 @@ class Node():
                     return [node_dist,self]
 
                 # Is hyperplane in the hypersphere
-                #print axis,self,abs(self.point[axis] - point[axis]),"i"
                 if abs(self.point[axis] - point[axis]) < closest[0]:
                     if self.lesser is None: return closest
                     other_closest = self.lesser.search(point,axis)
@@ -115,7 +108,7 @@ class KDTree():
 
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None:
-            self.points.append(n) 
+            self.nodes.append(n) 
             self.base_node = n
             return
         
