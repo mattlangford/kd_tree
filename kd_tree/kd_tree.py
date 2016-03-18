@@ -23,7 +23,6 @@ class Node():
 
         #print axis,self,"LESSER:",self.lesser,"GREATER:",self.greater
         if point[axis] < self.point[axis]:
-            #print axis,"-"
             if self.lesser is None:
                 # This check needs to be here since we lump axis equal to each other into the greater than branch.
                 if self.greater is not None:
@@ -134,6 +133,37 @@ class KDTree():
             self.nodes.append(n)
             self.base_node.insert(n,-1)
 
+    def insert_unique_average(self, point, linked_object, new_weight = .1):
+        # Behaves similarly to insert_unique but will remake the tree with a weighted average of the new point and old point.
+        n = Node(point,linked_object)
+
+        # If this is the first node we are trying to insert make it the base.
+        if self.base_node is None: 
+            self.nodes.append(n)
+            self.base_node = n
+            return
+
+        
+        # Check if there are any close points, if not add them like normal
+        closest_node = self.base_node.search(np.array(point),-1)
+        if closest_node[0] >= self.duplicate_tolerance:
+            self.nodes.append(n)
+            self.base_node.insert(n,-1)
+        else:
+            avg_point = (1-new_weight) * self.nodes[self.nodes.index(closest_node[1])].point + (new_weight) * n.point
+            n = Node(avg_point,linked_object)
+            
+            self.nodes.remove(closest_node[1])
+            self.nodes.append(n)
+            
+            # Go back through and re-add all the nodes to the tree
+            self.base_node = None
+            for n in self.nodes:
+                if self.base_node is None:
+                    self.base_node = n
+                    return
+                self.base_node.insert(n,-1)
+
     def search(self, point):
         if self.base_node is None: 
             print "Empty Tree!"
@@ -148,3 +178,10 @@ class KDTree():
     #     for l in new_list:
     #         self.insert(l.point,linked_object=l.linked_object)
     #     return temp_tree
+
+if __name__ == "__main__":
+    k = KDTree(.5)
+    k.insert([1],"red")
+    k.insert([2],"blue")
+    k.insert_unique_average([2.1],"red")
+    print k.nodes
