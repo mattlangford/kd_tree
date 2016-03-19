@@ -81,13 +81,11 @@ class Node():
 
     def insert(self, new_node, axis):
         axis = self.next_axis(axis)
-
         if new_node.point[axis] < self.point[axis]:
             if self.lesser is None:
                 self.lesser = new_node
                 return
             self.lesser.insert(new_node,axis)
-
         elif new_node.point[axis] >= self.point[axis]:
             if self.greater is None:
                 self.greater = new_node
@@ -95,6 +93,10 @@ class Node():
             self.greater.insert(new_node,axis)
 
         return
+
+    def reset_node(self):
+        self.greater = None
+        self.lesser = None
 
 class KDTree():
     def __init__(self, duplicate_tolerance = .001):
@@ -134,35 +136,41 @@ class KDTree():
             self.base_node.insert(n,-1)
 
     def insert_unique_average(self, point, linked_object, new_weight = .1):
+        print
         # Behaves similarly to insert_unique but will remake the tree with a weighted average of the new point and old point.
         n = Node(point,linked_object)
-
         # If this is the first node we are trying to insert make it the base.
         if self.base_node is None: 
             self.nodes.append(n)
             self.base_node = n
             return
-
         
         # Check if there are any close points, if not add them like normal
         closest_node = self.base_node.search(np.array(point),-1)
         if closest_node[0] >= self.duplicate_tolerance:
+            #print "adding new."
             self.nodes.append(n)
             self.base_node.insert(n,-1)
         else:
+            if closest_node[1].linked_object != linked_object:
+                #print "objects not same."
+                self.nodes.append(n)
+                self.base_node.insert(n,-1)
+                return
+
             avg_point = (1-new_weight) * self.nodes[self.nodes.index(closest_node[1])].point + (new_weight) * n.point
             n = Node(avg_point,linked_object)
-            
             self.nodes.remove(closest_node[1])
             self.nodes.append(n)
-            
+
             # Go back through and re-add all the nodes to the tree
             self.base_node = None
-            for n in self.nodes:
-                if self.base_node is None:
-                    self.base_node = n
-                    return
-                self.base_node.insert(n,-1)
+            for node in self.nodes:
+                node.reset_node()
+                if self.base_node == None:
+                    self.base_node = node
+                    continue
+                self.base_node.insert(node,-1)
 
     def search(self, point):
         if self.base_node is None: 
