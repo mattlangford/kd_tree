@@ -12,7 +12,7 @@ class Node():
     def __repr__(self):
         if self.linked_object is None:
             return str(self.point)
-        return self.linked_object + ":" + str(self.point)
+        return str(self.linked_object) + ":" + str(self.point)
 
     def dist_to_point(self, point):
         point = np.array(point)
