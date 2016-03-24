@@ -135,8 +135,7 @@ class KDTree():
             self.nodes.append(n)
             self.base_node.insert(n,-1)
 
-    def insert_unique_average(self, point, linked_object, new_weight = .1):
-        print
+    def insert_unique_average(self, point, linked_object=None, new_weight = .1):
         # Behaves similarly to insert_unique but will remake the tree with a weighted average of the new point and old point.
         n = Node(point,linked_object)
         # If this is the first node we are trying to insert make it the base.
